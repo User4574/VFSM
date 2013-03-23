@@ -1,0 +1,17 @@
+Comment: This machine accepts any even binary number
+Comment: Eg. "0 1 0 0 1 0"
+Comment: VFSM example
+Comment: Nathan Lasseter (User_4574) 2013
+
+Nodes: Start HA
+
+Start: Start
+
+Accept: HA
+
+Edges:
+	Start 1 Start
+	Start 0 HA
+	HA 1 Start
+	HA 0 HA
+End:

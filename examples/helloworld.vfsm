@@ -1,0 +1,14 @@
+Comment: This machine accepts "hello world"
+Comment: VFSM example
+Comment: Nathan Lasseter (User_4574) 2013
+
+Nodes: Start S0 HA
+
+Start: Start
+
+Accept: HA
+
+Edges:
+	Start hello S0
+	S0 world HA
+End:

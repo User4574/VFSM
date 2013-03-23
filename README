@@ -1,0 +1,20 @@
+If an emulation of a machine is a virtual machine, then this is VFSM: the Virtual Finite State Machine.
+
+Usage is: ruby vfsm.rb <machine description file> <input>
+
+A Machine description must have:
+ * A Nodes: line, followed by space separated node ids
+ * A Start: line, followed by the starting node id
+ * An Accept: line, followed by space separated node ids which may accept
+ * An Edges: line, followed by edge definition lines and an End: line
+
+There may be any number of Comment: lines which are unsurprisingly ignored.
+
+An edge definition line must have:
+ * The source node
+ * The input to accept
+ * The destination node
+
+The input is a string of space separated input tokens.
+
+See the examples.

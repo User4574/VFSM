@@ -1,0 +1,19 @@
+Comment: This machine accepts any number of "a b c"
+Comment: Eg. "a b c a b c"
+Comment: VFSM example
+Comment: Nathan Lasseter (User_4574) 2013
+
+Nodes: Start firsta firstb S0 S1 HA
+
+Start: Start
+
+Accept: HA
+
+Edges:
+	Start a firsta
+	firsta b firstb
+	firstb c HA
+	HA a S0
+	S0 b S1
+	S1 c HA
+End:
