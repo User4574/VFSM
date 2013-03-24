@@ -1,7 +1,7 @@
 class Node
-	def initialize id
+	def initialize id, accepting = false
 		@id = id
-		@accepting = false
+		@accepting = accepting
 		@edges = []
 	end
 
@@ -62,29 +62,29 @@ File.foreach(ARGV[0]) do |line|
 		elsif linearray[0].downcase == "comment:" then
 			#do nothing
 		elsif linearray[0].downcase == "nodes:" then
-			linearray[1..-1].each do |node|
-				extnode = nodes.select do |inode|
-					inode.id == node
-				end
-				if extnode.length > 0 then
-					puts "Duplicate node id in declaration at line #{lineno}"
-					puts line
-					exit
-				else
-					nodes.push(Node.new node)
-				end
-			end
+			#do nothing
+			#ignore line for backwards compatability
 		elsif linearray[0].downcase == "start:" then
 			tempsnode = nodes.select do |node|
 				node.id == linearray[1]
 			end
-			currentnode = tempsnode[0]
-		elsif linearray[0].downcase == "accept:" then
-			anodes = nodes.select do |inode|
-				linearray[1..-1].include? inode.id
+			if tempsnode.length == 0 then
+				currentnode = Node.new linearray[1]
+				nodes.push currentnode
+			else
+				currentnode = tempsnode[0]
 			end
-			anodes.each do |inode|
-				inode.accepting!
+		elsif linearray[0].downcase == "accept:" then
+			linearray[1..-1].each do |node|
+				anodes = nodes.select do |inode|
+					node == inode.id
+				end
+				if anodes.length == 0 then
+					mynode = Node.new node, true
+					nodes.push mynode
+				else
+					anodes[0].accepting!
+				end
 			end
 		elsif linearray[0].downcase == "edges:" then
 			inedges = true
@@ -97,19 +97,37 @@ File.foreach(ARGV[0]) do |line|
 		if linearray[0].downcase == "end:" then
 			inedges = false
 		else
+			fnode = nil
+			tnode = nil
 			fnodes = nodes.select do |node|
 				node.id == linearray[0]
+			end
+			if fnodes.length == 0 then
+				fnode = Node.new linearray[0]
+				nodes.push fnode
+			else
+				fnode = fnodes[0]
 			end
 			tnodes = nodes.select do |node|
 				node.id == linearray[2]
 			end
-			fnodes[0].pushedge linearray[1], tnodes[0]
+			if tnodes.length == 0 then
+				tnode = Node.new linearray[2]
+				nodes.push tnode
+			else
+				tnode = tnodes[0]
+			end
+			fnode.pushedge linearray[1], tnode
 		end
 	end
 end
 
 ARGV[1].chomp.split.each do |input|
-	print "(#{currentnode.id}) --#{input}--> "
+	if currentnode.accepting? then
+		print "((#{currentnode.id})) --#{input}--> "
+	else
+		print "(#{currentnode.id}) --#{input}--> "
+	end
 	nextnode = currentnode.goto input
 	if nextnode == :reject then
 		puts
@@ -120,7 +138,11 @@ ARGV[1].chomp.split.each do |input|
 	end
 end
 
-puts "(#{currentnode.id})"
+if currentnode.accepting? then
+	puts "((#{currentnode.id}))"
+else
+	puts "(#{currentnode.id})"
+end
 
 if currentnode.accepting? then
 	puts "Valid input, ACCEPTED"

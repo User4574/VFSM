@@ -1,0 +1,19 @@
+comment: MFCS Problems for Lecture 1
+comment: VFSM Syntax v2
+comment: Input over the alphabet {0, 1}
+comment: The leftmost and rightmost input must differ
+
+start: start
+accept: h0 h1
+edges:
+	start 1 q0
+	q0 1 q0
+	q0 0 h0
+	h0 1 q0
+	h0 0 h0
+	start 0 q1
+	q1 0 q1
+	q1 1 h1
+	h1 1 h1
+	h1 0 q1
+end:

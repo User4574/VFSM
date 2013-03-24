@@ -1,0 +1,15 @@
+comment: MFCS Problems for Lecture 1
+comment: Question 5a
+comment: VFSM syntax version 2
+comment: Any 00 in the string must be followed by a 1.
+comment: eg. "1 0 1" "0 0 1 0 0 1 1 0 1"
+
+start: s0
+accept: s0 s1
+edges:
+	s0 0 s1
+	s1 0 s2
+	s1 1 s0
+	s2 1 s0
+	s0 1 s0
+end:
