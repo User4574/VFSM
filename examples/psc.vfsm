@@ -1,0 +1,15 @@
+Comment: From http://en.wikipedia.org/wiki/Powerset_construction
+Start: {123}
+Accept: {123} {24} {23} {4}
+Edges:
+	{123} 0 {24}
+	{123} 1 {24}
+	{24} 0 {23}
+	{24} 1 {24}
+	{23} 0 {4}
+	{23} 1 {24}
+	{4} 0 {23}
+	{4} 1 {}
+	{} 0 {}
+	{} 1 {}
+End:
