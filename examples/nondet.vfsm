@@ -1,0 +1,11 @@
+start: s0
+
+accept: s3
+
+edges:
+	s0 epsilon: s3
+	s0 a s1
+	s0 a s2
+	s1 a s3
+	s2 b s3
+end:

@@ -21,13 +21,7 @@ class Node
 		tempto = @edges.select do |edge|
 			edge[0] == on
 		end
-		if tempto.length > 0 then
-			puts "Non-determinism error at node #{@id}"
-			puts "Multiple definitions for on #{on}"
-			exit
-		else
-			@edges.push [on, to]
-		end
+		@edges.push [on, to]
 	end
 
 	def goto on
@@ -38,7 +32,11 @@ class Node
 		if to.length == 0 then
 			return :reject
 		else
-			return to[0][1]
+			ret = []
+			to.each do |x|
+				ret.push x[1]
+			end
+			return ret
 		end
 	end
 end
@@ -50,7 +48,7 @@ end
 
 inedges = false
 nodes = []
-currentnode = nil
+currentnodes = []
 
 lineno = 0
 File.foreach(ARGV[0]) do |line|
@@ -69,10 +67,11 @@ File.foreach(ARGV[0]) do |line|
 				node.id == linearray[1]
 			end
 			if tempsnode.length == 0 then
-				currentnode = Node.new linearray[1]
-				nodes.push currentnode
+				startnode = Node.new linearray[1]
+				nodes.push startnode
+				currentnodes.push startnode
 			else
-				currentnode = tempsnode[0]
+				currentnodes.push tempsnode[0]
 			end
 		elsif linearray[0].downcase == "accept:" then
 			linearray[1..-1].each do |node|
@@ -117,34 +116,70 @@ File.foreach(ARGV[0]) do |line|
 			else
 				tnode = tnodes[0]
 			end
-			fnode.pushedge linearray[1], tnode
+			if linearray[1].downcase == "epsilon:" or linearray[1].downcase == "lambda:" then
+				fnode.pushedge :lambda, tnode
+			else
+				fnode.pushedge linearray[1], tnode
+			end
 		end
 	end
 end
 
-ARGV[1].chomp.split.each do |input|
-	if currentnode.accepting? then
-		print "((#{currentnode.id})) --#{input}--> "
-	else
-		print "(#{currentnode.id}) --#{input}--> "
+def printnodes nodes
+	print "{"
+	nodes.each do |node|
+		if node.accepting? then
+			print "((#{node.id})),"
+		else
+			print "(#{node.id}),"
+		end
 	end
-	nextnode = currentnode.goto input
-	if nextnode == :reject then
+	print "}"
+end
+
+ARGV[1].chomp.split.each do |input|
+	printnodes currentnodes
+
+	nextnodes = []
+	currentnodes.each do |node|
+		nextnode = node.goto input
+		unless nextnode == :reject
+			nextnode.each do |x|
+				nextnodes.push x
+			end
+		end
+	end
+
+	oldnext = nextnodes.dup
+	begin
+		epsnodes = []
+		nextnodes.each do |node|
+			tmp = node.goto :lambda
+			tmp.each do |x|
+				epsnodes.push tmp
+			end
+		end
+		epsnodes.each do |node|
+			nextnodes.push node
+		end
+	end while oldnext != nextnodes
+	
+	if nextnodes == [] then
 		puts
 		puts "Invalid input, REJECTED"
 		exit
 	else
-		currentnode = nextnode
+		currentnodes = nextnodes
 	end
 end
 
-if currentnode.accepting? then
-	puts "((#{currentnode.id}))"
-else
-	puts "(#{currentnode.id})"
-end
+printnodes currentnodes
 
-if currentnode.accepting? then
+acc = false
+currentnodes.each do |node|
+	acc = true if node.accepting?
+end
+if acc then
 	puts "Valid input, ACCEPTED"
 else
 	puts "Invalid input, REJECTED"
