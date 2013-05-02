@@ -1,3 +1,4 @@
+require 'pp' 
 class Node
 	def initialize id, accepting = false
 		@id = id
@@ -126,20 +127,37 @@ File.foreach(ARGV[0]) do |line|
 end
 
 def printnodes nodes
-	print "{"
-	nodes.each do |node|
-		if node.accepting? then
-			print "((#{node.id})),"
+	print "{ "
+	(0..(nodes.length - 1)).each do |x|
+		if nodes[x].accepting? then
+			print "((#{nodes[x].id}))"
 		else
-			print "(#{node.id}),"
+			print "(#{nodes[x].id})"
 		end
+		print ", " unless x == (nodes.length - 1)
 	end
-	print "}"
+	print " }"
 end
 
-ARGV[1].chomp.split.each do |input|
-	printnodes currentnodes
+def recurse nodeslist
+	begin
+		oldlist = nodeslist.dup
+		oldlist.each do |node|
+			tmp = node.goto :lambda
+			unless tmp == :reject then
+				tmp.each do |x|
+					nodeslist.push x
+				end
+			end
+		end
+		nodeslist.uniq!
+	end while oldlist != nodeslist
+end
 
+recurse currentnodes
+printnodes currentnodes
+
+ARGV[1].chomp.split.each do |input|
 	nextnodes = []
 	currentnodes.each do |node|
 		nextnode = node.goto input
@@ -150,19 +168,11 @@ ARGV[1].chomp.split.each do |input|
 		end
 	end
 
-	oldnext = nextnodes.dup
-	begin
-		epsnodes = []
-		nextnodes.each do |node|
-			tmp = node.goto :lambda
-			tmp.each do |x|
-				epsnodes.push tmp
-			end
-		end
-		epsnodes.each do |node|
-			nextnodes.push node
-		end
-	end while oldnext != nextnodes
+	recurse nextnodes
+
+	print " --#{input}--> "
+
+	printnodes nextnodes
 	
 	if nextnodes == [] then
 		puts
@@ -173,8 +183,8 @@ ARGV[1].chomp.split.each do |input|
 	end
 end
 
-printnodes currentnodes
 
+puts
 acc = false
 currentnodes.each do |node|
 	acc = true if node.accepting?
